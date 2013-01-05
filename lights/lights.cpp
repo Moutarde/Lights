@@ -328,13 +328,18 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
 
-    FramebufferGL shadow;
-    status = build_framebuffer(shadow, 1024, 1024, 0);
-    if (status == -1)
-    {
-        fprintf(stderr, "Error on building framebuffer\n");
-        exit( EXIT_FAILURE );
-    }
+	const unsigned int nbLights = 10;
+
+    FramebufferGL shadow[nbLights];
+	for(unsigned int i=0; i<nbLights; ++i)
+	{
+		status = build_framebuffer(shadow[i], 1024, 1024, 0);
+		if (status == -1)
+		{
+			fprintf(stderr, "Error on building framebuffer\n");
+			exit( EXIT_FAILURE );
+		}
+	}
 
 
     do
@@ -453,57 +458,80 @@ int main( int argc, char **argv )
         glBindVertexArray(vao[1]);
         glDrawElements(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
 
-        // Bind shadow fbo
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow.fbo);
-        glDrawBuffers(shadow.outCount, shadow.drawBuffers);
-
-        // Viewport 
-        glViewport( 0, 0, 1024, 1024);
-
-        // Default states
-        glEnable(GL_DEPTH_TEST);
-
-        // Clear the front buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         // Compute light positions
-        //float lightPosition[3] = { 5.0, 5.0, 5.0};
-        float lightPosition[3] = { sin(t) * 10.0, 5.0, cos(t) * 10.0};
-        float lightTarget[3] = { 0.0, 0.0, 0.0};
-        float lightDirection[3];
-        float lightUp[3] = { 0.0, 1.0, 0.0};
-        vec3fSub(lightTarget, lightPosition, lightDirection);
-        vec3fNormalize(lightDirection, vec3fNorm(lightDirection));
-        float lightColor[3] = {1.0, 1.0, 1.0};
-        float lightIntensity = 1.0;
+        float lightPosition[nbLights][3];
+		float lightTarget[nbLights][3];
+		float lightDirection[nbLights][3];
+		float lightUp[nbLights][3];
+        float lightColor[nbLights][3];
+		float lightIntensity[nbLights];
 
-        // Build shadow matrices
-        float shadowProjection[16];
-        float worldToLight[16];
-        lookAt(lightPosition, lightTarget, lightUp, worldToLight);
-        perspective(60.f, 1.f, 1.0f, 1000.f, shadowProjection );
-        float projectionLight[16];     
-        float projectionLightBias[16];     
-        mat4fMul( worldToLight, shadowProjection,  projectionLight);
-        mat4fMul(  projectionLight, MAT4F_M1_P1_TO_P0_P1, projectionLightBias);
+        float projectionLightBias[nbLights][16];   
+		for (unsigned int i = 0; i < nbLights; ++i)
+        {
+            float tl = t * i;
 
-        // Bind shadowgen shader
-        glUseProgram(shadowgen_shader.program);
-        // Upload uniforms
-        glUniformMatrix4fv(shadowgen_projectionLocation, 1, 0, shadowProjection);
-        glUniformMatrix4fv(shadowgen_viewLocation, 1, 0, worldToLight);
-        glUniformMatrix4fv(shadowgen_objectLocation, 1, 0, objectToWorld);
+			// Compute light positions
+			lightPosition[i][0] = sin(tl) * 10.0;
+			lightPosition[i][1] = 5.0;
+            lightPosition[i][2] = cos(tl) * 10.0;
+			lightTarget[i][0] = 0.0;
+			lightTarget[i][1] = 0.0;
+			lightTarget[i][2] = 0.0;
+			lightDirection[i][3];
+			lightUp[i][0] = 0.0;
+			lightUp[i][1] = 1.0;
+			lightUp[i][2] = 0.0;
 
-        // Render vaos
-        glCullFace(GL_FRONT);
-        glBindVertexArray(vao[0]);
-        glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 4);
-        glBindVertexArray(vao[1]);
-        glDrawElements(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
-        glCullFace(GL_BACK);
+			vec3fSub(lightTarget[i], lightPosition[i], lightDirection[i]);
+			vec3fNormalize(lightDirection[i], vec3fNorm(lightDirection[i]));
 
-        // Unbind framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            lightColor[i][0] = sin(tl) *  1.0;
+            lightColor[i][1] = 1.0 - cos(tl);
+            lightColor[i][2] = -sin(tl);
+			lightIntensity[i] = 1.0;
+
+			// Bind shadow fbo
+			glBindFramebuffer(GL_FRAMEBUFFER, shadow[i].fbo);
+			glDrawBuffers(shadow[i].outCount, shadow[i].drawBuffers);
+
+			// Viewport 
+			glViewport( 0, 0, 1024, 1024);
+
+			// Default states
+			glEnable(GL_DEPTH_TEST);
+
+			// Clear the front buffer
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// Build shadow matrices
+			float shadowProjection[16];
+			float worldToLight[16];
+			lookAt(lightPosition[i], lightTarget[i], lightUp[i], worldToLight);
+			perspective(60.f, 1.f, 1.0f, 1000.f, shadowProjection );
+			float projectionLight[16];     
+	//        float projectionLightBias[16];     
+			mat4fMul( worldToLight, shadowProjection,  projectionLight);
+			mat4fMul(  projectionLight, MAT4F_M1_P1_TO_P0_P1, projectionLightBias[i]);
+
+			// Bind shadowgen shader
+			glUseProgram(shadowgen_shader.program);
+			// Upload uniforms
+			glUniformMatrix4fv(shadowgen_projectionLocation, 1, 0, shadowProjection);
+			glUniformMatrix4fv(shadowgen_viewLocation, 1, 0, worldToLight);
+			glUniformMatrix4fv(shadowgen_objectLocation, 1, 0, objectToWorld);
+
+			// Render vaos
+			glCullFace(GL_FRONT);
+			glBindVertexArray(vao[0]);
+			glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 4);
+			glBindVertexArray(vao[1]);
+			glDrawElements(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
+			glCullFace(GL_BACK);
+
+			// Unbind framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 
         // Viewport 
         glViewport( 0, 0, width, height );
@@ -522,7 +550,7 @@ int main( int argc, char **argv )
         glUniform1i(laccum_shadowLocation, 3);
         glUniform3fv(laccum_cameraPositionLocation, 1, cameraPosition);
         glUniformMatrix4fv(laccum_inverseViewProjectionLocation, 1, 0, iviewProjection);
-        glUniformMatrix4fv(laccum_projectionLightLocation, 1, 0, projectionLightBias);
+//        glUniformMatrix4fv(laccum_projectionLightLocation, 1, 0, projectionLightBias);
         glUniform1f(laccum_shadowBiasLocation, shadowBias);
         glUniform1f(laccum_shadowSamples, shadowSamples);
         glUniform1f(laccum_shadowSampleSpread, shadowSampleSpread);
@@ -537,8 +565,8 @@ int main( int argc, char **argv )
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gbuffer.depthTexId);        
         // Bind shadow map to unit 3
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, shadow.depthTexId);        
+//        glActiveTexture(GL_TEXTURE3);
+//        glBindTexture(GL_TEXTURE_2D, shadow.depthTexId);        
 
         // Blit above the rest
         glDisable(GL_DEPTH_TEST);
@@ -547,35 +575,24 @@ int main( int argc, char **argv )
         glBlendFunc(GL_ONE, GL_ONE);
 
 
-        for (unsigned int i = 0; i < 15; ++i)
-        {
-            float tl = t * i;
+        for (unsigned int i = 0; i < nbLights; ++i)
+        { 
+			// Bind shadow map to unit 3
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, shadow[i].depthTexId); 
 
             //Update light uniforms
-            float lightPosition[3] = { sin(tl) * 10.0, -0.5, cos(tl) * 10.0};
-            float lightColor[3] = {sin(tl) *  1.0, 1.0 - cos(tl), -sin(tl)};
-            float lightIntensity = 10.0;
-
-			glUniform3fv(laccum_lightDirectionLocation, 1, lightDirection);
-            glUniform3fv(laccum_lightPositionLocation, 1, lightPosition);
-            glUniform3fv(laccum_lightColorLocation, 1, lightColor);
-            glUniform1f(laccum_lightIntensityLocation, lightIntensity);
+			glUniformMatrix4fv(laccum_projectionLightLocation, 1, 0, projectionLightBias[i]);
+			glUniform3fv(laccum_lightDirectionLocation, 1, lightDirection[i]);
+            glUniform3fv(laccum_lightPositionLocation, 1, lightPosition[i]);
+            glUniform3fv(laccum_lightColorLocation, 1, lightColor[i]);
+            glUniform1f(laccum_lightIntensityLocation, lightIntensity[i]);
 
             // Draw quad
             glBindVertexArray(vao[2]);
             glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
         }
-		/*
-        // Light uniforms
-        glUniform3fv(laccum_lightDirectionLocation, 1, lightDirection);
-        glUniform3fv(laccum_lightPositionLocation, 1, lightPosition);
-        glUniform3fv(laccum_lightColorLocation, 1, lightColor);
-        glUniform1f(laccum_lightIntensityLocation, lightIntensity);
 
-        // Draw quad
-        glBindVertexArray(vao[2]);
-        glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
-*/
         glDisable(GL_BLEND);
 
         // Bind blit shader
@@ -610,7 +627,7 @@ int main( int argc, char **argv )
         // Viewport 
         glViewport( width/4 * 3, 0, width/4, height/4  );
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, shadow.depthTexId);        
+        glBindTexture(GL_TEXTURE_2D, shadow[0].depthTexId);        
         // Draw quad
         glBindVertexArray(vao[2]);
         glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
