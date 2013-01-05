@@ -128,6 +128,17 @@ int main( int argc, char **argv )
     GUIStates guiStates;
     init_gui_states(guiStates);
 
+	
+	//################################################
+    //################## END INIT ####################
+    //################################################
+
+
+
+    //################################################
+    //################## TEXTURES ####################
+    //################################################
+	
     // Load images and upload textures
     GLuint textures[3];
     glGenTextures(3, textures);
@@ -153,6 +164,11 @@ int main( int argc, char **argv )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     fprintf(stderr, "Spec %dx%d:%d\n", x, y, comp);
 
+	
+	//################################################
+    //################### SHADERS ####################
+    //################################################
+	
     // Try to load and compile shader
     int status;
     ShaderGLSL gbuffer_shader;
@@ -225,23 +241,35 @@ int main( int argc, char **argv )
     GLuint shadowgen_objectLocation = glGetUniformLocation(shadowgen_shader.program, "Object");
     GLuint shadowgen_timeLocation = glGetUniformLocation(shadowgen_shader.program, "Time");
 
+	
+	//################################################
+    //################## GEOMETRY ####################
+    //################################################
+	
     // Load geometry
     int   cube_triangleCount = 12;
     int   cube_triangleList[] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
     float cube_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f,  };
     float cube_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
     float cube_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
-    int   plane_triangleCount = 2;
+    
+	int   plane_triangleCount = 2;
     int   plane_triangleList[] = {0, 1, 2, 2, 1, 3}; 
     float plane_uvs[] = {0.f, 0.f, 0.f, 10.f, 10.f, 0.f, 10.f, 10.f};
     float plane_vertices[] = {-50.0, -1.0, 50.0, 50.0, -1.0, 50.0, -50.0, -1.0, -50.0, 50.0, -1.0, -50.0};
     float plane_normals[] = {0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
-    int   quad_triangleCount = 2;
+    
+	int   quad_triangleCount = 2;
     int   quad_triangleList[] = {0, 1, 2, 2, 1, 3}; 
     float quad_uvs[] = {0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f};
     float quad_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5,};
     float quad_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
 
+	
+	//################################################
+    //##################### VAO ######################
+    //################################################
+	
     // Vertex Array Object
     GLuint vao[3];
     glGenVertexArrays(3, vao);
@@ -319,6 +347,10 @@ int main( int argc, char **argv )
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
+	//################################################
+    //################### FBUFFER ####################
+    //################################################
+	
     // Init frame buffers
     FramebufferGL gbuffer;
     status = build_framebuffer(gbuffer, width, height, 2);
@@ -452,6 +484,8 @@ int main( int argc, char **argv )
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
 
+		//############## DUPLICATE OBJECTS USING SHADER #############
+	
         // Render vaos
         glBindVertexArray(vao[0]);
         glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 4);
