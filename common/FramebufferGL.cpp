@@ -33,8 +33,8 @@ int  build_framebuffer(FramebufferGL & fb, int width, int height, int outCount)
 		fb.drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fb.depthTexId, 0);
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		return -1;
+	//if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//	return -1;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	fb.width = width;
