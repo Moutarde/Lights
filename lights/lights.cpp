@@ -360,7 +360,9 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
 
-	const unsigned int nbLights = 16;
+	const unsigned int nbColorLights = 100;
+	const unsigned int nbWhiteLights = 6;
+	const unsigned int nbLights = nbColorLights + nbWhiteLights;
 
     FramebufferGL shadow[nbLights];
 	for(unsigned int i=0; i<nbLights; ++i)
@@ -503,8 +505,8 @@ int main( int argc, char **argv )
         float projectionLightBias[nbLights][16];   
 		for (unsigned int i = 0; i < nbLights; ++i)
         {
-			if(i<nbLights-6) {
-				float tl = t * (i+1)/((nbLights-6)/2.0);
+			if(i<nbColorLights) {
+				float tl = t * (i+1)/(nbColorLights/2.0);
 				float tc = t * (i+1);
 				float a = 5, b = 1, c = 5, d = 1;
 
@@ -525,10 +527,10 @@ int main( int argc, char **argv )
 				lightColor[i][0] = sin(tc) *  1.0;
 				lightColor[i][1] = 1.0 - cos(tc);
 				lightColor[i][2] = -sin(tc);
-				lightIntensity[i] = 1.5/((nbLights-6)/10.0);
+				lightIntensity[i] = 1.5/(nbColorLights/10.0);
 			}
 			else {
-				float tl = t + ((2.0*3.1415)/6)*(i-6);
+				float tl = t + ((2.0*3.1415)/nbWhiteLights)*(i-nbWhiteLights);
 				float tc = t * ((i/2.0)+1.0);
 
 				// Compute light positions
@@ -548,7 +550,7 @@ int main( int argc, char **argv )
 				lightColor[i][0] = 1.0;
 				lightColor[i][1] = 1.0;
 				lightColor[i][2] = 1.0;
-				lightIntensity[i] = 0.1;
+				lightIntensity[i] = 0.1/(nbWhiteLights/6.0);
 			}
 
 			// Bind shadow fbo
