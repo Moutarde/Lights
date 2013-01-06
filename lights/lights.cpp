@@ -360,7 +360,7 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
 
-	const unsigned int nbLights = 10;
+	const unsigned int nbLights = 16;
 
     FramebufferGL shadow[nbLights];
 	for(unsigned int i=0; i<nbLights; ++i)
@@ -503,27 +503,53 @@ int main( int argc, char **argv )
         float projectionLightBias[nbLights][16];   
 		for (unsigned int i = 0; i < nbLights; ++i)
         {
-            float tl = t * i;
+			if(i<nbLights-6) {
+				float tl = t * (i+1)/((nbLights-6)/2.0);
+				float tc = t * (i+1);
+				float a = 5, b = 1, c = 5, d = 1;
 
-			// Compute light positions
-			lightPosition[i][0] = sin(tl) * 10.0;
-			lightPosition[i][1] = 5.0;
-            lightPosition[i][2] = cos(tl) * 10.0;
-			lightTarget[i][0] = 0.0;
-			lightTarget[i][1] = 0.0;
-			lightTarget[i][2] = 0.0;
-			lightDirection[i][3];
-			lightUp[i][0] = 0.0;
-			lightUp[i][1] = 1.0;
-			lightUp[i][2] = 0.0;
+				// Compute light positions
+				lightPosition[i][0] = 5.0 * (cos(a * tl) - pow((cos(b * tl)), 3));
+				lightPosition[i][1] = 2.0;
+				lightPosition[i][2] = 5.0 * (sin(c * tl) - pow((sin(d * tl)),3));
+				lightTarget[i][0] = 1.5*lightPosition[i][0];
+				lightTarget[i][1] = -1.0;
+				lightTarget[i][2] = 1.5*lightPosition[i][2];
+				lightUp[i][0] = 0.0;
+				lightUp[i][1] = 1.0;
+				lightUp[i][2] = 0.0;
 
-			vec3fSub(lightTarget[i], lightPosition[i], lightDirection[i]);
-			vec3fNormalize(lightDirection[i], vec3fNorm(lightDirection[i]));
+				vec3fSub(lightTarget[i], lightPosition[i], lightDirection[i]);
+				vec3fNormalize(lightDirection[i], vec3fNorm(lightDirection[i]));
 
-            lightColor[i][0] = sin(tl) *  1.0;
-            lightColor[i][1] = 1.0 - cos(tl);
-            lightColor[i][2] = -sin(tl);
-			lightIntensity[i] = 1.0;
+				lightColor[i][0] = sin(tc) *  1.0;
+				lightColor[i][1] = 1.0 - cos(tc);
+				lightColor[i][2] = -sin(tc);
+				lightIntensity[i] = 1.5/((nbLights-6)/10.0);
+			}
+			else {
+				float tl = t + ((2.0*3.1415)/6)*(i-6);
+				float tc = t * ((i/2.0)+1.0);
+
+				// Compute light positions
+				lightPosition[i][0] = sin(tl) * 35.0;
+				lightPosition[i][1] = 5.0;
+				lightPosition[i][2] = cos(tl) * 35.0;
+				lightTarget[i][0] = 0.0;
+				lightTarget[i][1] = 0.0;
+				lightTarget[i][2] = 0.0;
+				lightUp[i][0] = 0.0;
+				lightUp[i][1] = 1.0;
+				lightUp[i][2] = 0.0;
+
+				vec3fSub(lightTarget[i], lightPosition[i], lightDirection[i]);
+				vec3fNormalize(lightDirection[i], vec3fNorm(lightDirection[i]));
+
+				lightColor[i][0] = 1.0;
+				lightColor[i][1] = 1.0;
+				lightColor[i][2] = 1.0;
+				lightIntensity[i] = 0.1;
+			}
 
 			// Bind shadow fbo
 			glBindFramebuffer(GL_FRAMEBUFFER, shadow[i].fbo);
