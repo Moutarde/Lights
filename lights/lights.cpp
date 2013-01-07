@@ -199,7 +199,7 @@ int main( int argc, char **argv )
     fprintf(stderr, "normalMap %dx%d:%d\n", x, y, comp);
 
 	unsigned char * diffuseCobble2 = stbi_load("textures/cobble_01.tga", &x, &y, &comp, 3);
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textures[5]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuseCobble2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -207,6 +207,16 @@ int main( int argc, char **argv )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     fprintf(stderr, "diffuseCobble2 %dx%d:%d\n", x, y, comp);
+	
+	unsigned char * skybox = stbi_load("textures/skybox_stars.tga", &x, &y, &comp, 3);
+    glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textures[6]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    fprintf(stderr, "skybox %dx%d:%d\n", x, y, comp);
 	//################################################
     //################### SHADERS ####################
     //################################################
@@ -252,7 +262,8 @@ int main( int argc, char **argv )
     // Compute locations for light accumulation shader
     GLuint laccum_projectionLocation = glGetUniformLocation(laccum_shader.program, "Projection");
     GLuint laccum_materialLocation = glGetUniformLocation(laccum_shader.program, "Material");
-    GLuint laccum_normalLocation = glGetUniformLocation(laccum_shader.program, "Normal");
+    GLuint laccum_normalLocation = glGetUniformLocation(laccum_shader.program, "NormalMap");
+	//GLuint laccum_normalMapLocation = glGetUniformLocation(laccum_shader.program, "NormalMap");
     GLuint laccum_depthLocation = glGetUniformLocation(laccum_shader.program, "Depth");
     GLuint laccum_shadowLocation = glGetUniformLocation(laccum_shader.program, "Shadow");
     GLuint laccum_inverseViewProjectionLocation = glGetUniformLocation(laccum_shader.program, "InverseViewProjection");
@@ -308,13 +319,39 @@ int main( int argc, char **argv )
     float quad_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5,};
     float quad_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
 
-	/*
+	
 	int   skybox_triangleCount = 12;
     int   skybox_triangleList[] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
     float skybox_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f,  };
-    float skybox_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+    float skybox_vertices[] = {	-50.0, -50.0, 50.0,
+								50.0, -50.0, 50.0,
+								-50.0, 50.0, 50.0,
+								50.0, 50.0, 50.0,
+								-50.0, 50.0, 50.0,
+								50.0, 50.0, 50.0,
+								-50.0, 50.0, -50.0,
+								50.0, 50.0, -50.0,
+								-50.0, 50.0, -50.0,
+								50.0, 50.0, -50.0,
+								-50.0, -50.0, -50.0,
+								50.0, -50.0, -50.0,
+								-50.0, -50.0, -50.0,
+								50.0, -50.0, -50.0,
+								-50.0, -50.0, 50.0,
+								50.0, -50.0, 50.0,
+								50.0, -50.0, 50.0,
+								50.0, -50.0, -50.0,
+								50.0, 50.0, 50.0,
+								50.0, 50.0, 50.0,
+								50.0, 50.0, -50.0,
+								-50.0, -50.0, -50.0,
+								-50.0, -50.0, 50.0,
+								-50.0, 50.0, -50.0,
+								-50.0, 50.0, -50.0,
+								-50.0, -50.0, 50.0,
+								-50.0, 50.0, 50.0};
     float skybox_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
-    */
+    
 
 
 
@@ -323,12 +360,12 @@ int main( int argc, char **argv )
     //################################################
 	
     // Vertex Array Object
-    GLuint vao[3];
-    glGenVertexArrays(3, vao);
+    GLuint vao[4];
+    glGenVertexArrays(4, vao);
 
     // Vertex Buffer Objects
-    GLuint vbo[12];
-    glGenBuffers(12, vbo);
+    GLuint vbo[16];
+    glGenBuffers(16, vbo);
 
     // Cube
     glBindVertexArray(vao[0]);
@@ -394,6 +431,30 @@ int main( int argc, char **argv )
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uvs), quad_uvs, GL_STATIC_DRAW);
 
+	
+	// Skybox
+    glBindVertexArray(vao[3]);
+    // Bind indices and upload data
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[12]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skybox_triangleList), skybox_triangleList, GL_STATIC_DRAW);
+    // Bind vertices and upload data
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), skybox_vertices, GL_STATIC_DRAW);
+    // Bind normals and upload data
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_normals), skybox_normals, GL_STATIC_DRAW);
+    // Bind uv coords and upload data
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[15]);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_uvs), skybox_uvs, GL_STATIC_DRAW);
+	
+	
+	
     // Unbind everything. Potentially illegal on some implementations
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -412,7 +473,7 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
 
-	const unsigned int nbColorLights = 100;
+	const unsigned int nbColorLights = 30;
 	const unsigned int nbWhiteLights = 6;
 	const unsigned int nbLights = nbColorLights + nbWhiteLights;
 
@@ -537,7 +598,7 @@ int main( int argc, char **argv )
 		glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[4]);
 		glUniform1i(gbuffer_normalMapLocation, textures[4]);
-
+		glUniform1i(laccum_normalLocation, textures[4]);
 		
 		//############## DUPLICATE OBJECTS USING SHADER HERE #############
 		
@@ -559,6 +620,15 @@ int main( int argc, char **argv )
 		
         glBindVertexArray(vao[1]);
         glDrawElements(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
+		
+		glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textures[6]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textures[6]);
+		
+        glBindVertexArray(vao[3]);
+        glDrawElementsInstanced(GL_TRIANGLES, skybox_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
+		
 
         // Compute light positions
         float lightPosition[nbLights][3];
@@ -673,7 +743,7 @@ int main( int argc, char **argv )
         // Upload uniforms
         glUniformMatrix4fv(laccum_projectionLocation, 1, 0, orthoProj);
         glUniform1i(laccum_materialLocation, 0);
-        glUniform1i(laccum_normalLocation, 1);
+        //glUniform1i(laccum_normalLocation, 1);
         glUniform1i(laccum_depthLocation, 2);
         glUniform1i(laccum_shadowLocation, 3);
         glUniform3fv(laccum_cameraPositionLocation, 1, cameraPosition);

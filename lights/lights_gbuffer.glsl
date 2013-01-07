@@ -19,7 +19,7 @@ out vec3 position;
 void main(void)
 {	
 	uv = VertexTexCoord;
-	//vec3 vNormal = vec3(Object * vec4(VertexNormal, 1.0));	//normals in World space
+	vec3 vNormal = vec3(Object * vec4(VertexNormal, 1.0));	//normals in World space
 	position = vec3(Object * vec4(VertexPosition, 1.0));	//positions in World space
 	position.y += (gl_InstanceID * 1.5); 
 	position.x += (gl_InstanceID * 1.5); 
