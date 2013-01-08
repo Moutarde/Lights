@@ -855,9 +855,11 @@ int main( int argc, char **argv )
             glBindVertexArray(vao[2]);
             glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
         }
-
+	
+		/*
         glDisable(GL_BLEND);
 
+		
         // Bind blit shader
         glUseProgram(blit_shader.program);
         // Upload uniforms
@@ -931,8 +933,9 @@ int main( int argc, char **argv )
         imguiEndFrame();
 
 
-        imguiRenderGLDraw(); 
+        imguiRenderGLDraw(); */
         glDisable(GL_BLEND);
+		
 
         // Check for errors
         GLenum err = glGetError();
