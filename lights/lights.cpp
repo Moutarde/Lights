@@ -72,7 +72,7 @@ void init_gui_states(GUIStates & guiStates)
 
 int main( int argc, char **argv )
 {
-    int width = 1024, height=768;
+    int width = 1280, height=720;
     double t;
 
     // Initialise GLFW
