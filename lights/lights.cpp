@@ -476,6 +476,8 @@ int main( int argc, char **argv )
 	const unsigned int nbColorLights = 30;
 	const unsigned int nbWhiteLights = 6;
 	const unsigned int nbLights = nbColorLights + nbWhiteLights;
+	int animationFrames = 0;
+	int offset = 0;
 
     FramebufferGL shadow[nbLights];
 	for(unsigned int i=0; i<nbLights; ++i)
@@ -488,11 +490,11 @@ int main( int argc, char **argv )
 		}
 	}
 
-
     do
     {
         t = glfwGetTime();
 
+		
         // Mouse states
         int leftButton = glfwGetMouseButton( GLFW_MOUSE_BUTTON_LEFT );
         int rightButton = glfwGetMouseButton( GLFW_MOUSE_BUTTON_RIGHT );
@@ -552,6 +554,69 @@ int main( int argc, char **argv )
             guiStates.lockPositionY = mousey;
         }
   
+		// Camera animation
+
+		//offset position & direction
+		if(offset == 0)
+		{
+			camera.pan(-0.95f,0.3f);
+			camera.turn(0.0f,3.14/2.0f);
+			offset++;
+		}
+
+		//animation cycle
+		animationFrames = (animationFrames + 1 )%981;
+		if(animationFrames < 60)	//for 60 images
+		{
+			camera.turn(0.0f,-3.14/120.0f);				// 1/4 de tour
+		}
+		else if(animationFrames < 100)	//for 40 images
+		{
+			camera.pan(0.0095f,0.0000f);
+			//camera.turn(0.0f,-0.01f);
+				
+		}
+		else if(animationFrames < 160)	//for 60 images
+		{
+			camera.pan(0.0095f,-0.003f);	//60*0.003 = 0.18
+			//camera.turn(0.0f,-0.01f);
+		}
+		else if(animationFrames < 360)	//for 200 images
+		{
+			camera.turn(0.7*3.14/400.0f,2.0*3.14/200.0f);	// 1 tour
+		}
+		else if(animationFrames < 460)	//for 100 images
+		{
+			camera.turn(0.0f,2.0*3.14/200.0f);				// 1/2 tour
+		}
+		else if(animationFrames < 660)	//for 200 images
+		{
+			camera.turn(-0.7*3.14/400.0f,2.0*3.14/200.0f);	// 1 tour
+		}
+		else if(animationFrames < 760)	//for 100 images	// 1/2 tour
+		{
+			camera.turn(0.0f,2.0*3.14/200.0f);
+		}
+		else if(animationFrames < 800)	//for 40 images	
+		{
+			camera.zoom(-0.04f);
+		}
+		else if(animationFrames < 880)	//for 80 images	
+		{
+			camera.zoom(0.02f);
+			camera.pan(0.0f,0.00225f);	//0.00225*80 = 0.18
+		}
+		else if(animationFrames < 980)	//for 100 images
+		{
+			camera.pan(-0.0095f,0.0f);
+		}
+		else if(animationFrames < 981)
+		{
+			camera.turn(0.0f,3.14/2.0f);				// 1/4 de tour
+		}
+		
+
+
         // Get camera matrices
         float projection[16];
         float worldToView[16];
